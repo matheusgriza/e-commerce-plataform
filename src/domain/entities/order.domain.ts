@@ -2,11 +2,15 @@ import type { Product } from './product.domain.js';
 import type { Money } from './value-objects/money.js';
 
 export type OrderStatus = 'closed' | 'open' | 'canceled' | 'deleted';
-
+export type OrderItem = {
+    productId: string;
+    quantity: number;
+    unitPrice: Money;
+};
 export type OrderProps = {
     id: string;
     customerId: string;
-    items: Product[];
+    items: OrderItem;
     status: OrderStatus;
     total: Money;
     createdAt: Date;
@@ -18,7 +22,7 @@ export class Order {
 
     public static build(
         customerId: string,
-        items: Product[],
+        items: OrderItem,
         status: OrderStatus,
         total: Money,
     ): Order {
@@ -36,7 +40,7 @@ export class Order {
     public static with(
         id: string,
         customerId: string,
-        items: Product[],
+        items: OrderItem,
         status: OrderStatus,
         total: Money,
     ): Order {
@@ -59,7 +63,7 @@ export class Order {
         return this.props.customerId;
     }
 
-    public get items(): Product[] {
+    public get items(): OrderItem {
         return this.props.items;
     }
 
