@@ -11,7 +11,7 @@ type ProductRow = {
 };
 
 export class SqliteProductRepository implements IProductRepository {
-    private constructor(readonly db: Database.Database) {}
+    constructor(readonly db: Database.Database) {}
 
     private toDomain(row: ProductRow): Product {
         return Product.with(
@@ -23,9 +23,9 @@ export class SqliteProductRepository implements IProductRepository {
     }
 
     public async findById(id: string): Promise<Product | null> {
-        const row = this.db.prepare('SELECT * FROM products').get(id) as
-            | ProductRow
-            | undefined;
+        const row = this.db
+            .prepare('SELECT * FROM products WHERE id = ?')
+            .get(id) as ProductRow | undefined;
 
         if (!row) return null;
 
