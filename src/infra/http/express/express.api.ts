@@ -24,6 +24,13 @@ export class ApiExpress implements IApi {
         this.app.post(path, handler);
     }
 
+    public addPutRoute(
+        path: string,
+        handler: (req: Request, res: Response) => Promise<void>,
+    ): void {
+        this.app.put(path, handler);
+    }
+
     public start(port: Number) {
         this.app.listen(port, () => {
             console.info('server running on port: ', port);

@@ -1,0 +1,29 @@
+import type Database from 'better-sqlite3';
+import { CreateProduct } from '../app/use-cases/create-product.use-case';
+import { GetProduct } from '../app/use-cases/get-product.use-case';
+import { UpdateStock } from '../app/use-cases/update-stock.use-case';
+import type { IEventBus } from '../app/ports/output/event-bus.port';
+import { ApiExpress } from './http/express/express.api';
+import { ProductController } from './http/catalog/product.controller';
+import { registerProductRoutes } from './http/catalog/product.routes';
+import { SqliteProductRepository } from './persistence/sqlite/sqlite-product.repository';
+
+export function buildCatalogModule(
+    api: ApiExpress,
+    db: Database.Database,
+    eventBus: IEventBus,
+): void {
+    const productRepository = new SqliteProductRepository(db);
+
+    const createProductUseCase = new CreateProduct(productRepository, eventBus);
+    const getProductUseCase = new GetProduct(productRepository);
+    const updateStockUseCase = new UpdateStock(productRepository, eventBus);
+
+    const productController = new ProductController(
+        createProductUseCase,
+        getProductUseCase,
+        updateStockUseCase,
+    );
+
+    registerProductRoutes(api, productController);
+}
