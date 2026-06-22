@@ -6,6 +6,7 @@ import type { IEventBus } from '../app/ports/output/event-bus.port';
 import { ApiExpress } from './http/express/express.api';
 import { ProductController } from './http/catalog/product.controller';
 import { registerProductRoutes } from './http/catalog/product.routes';
+import { migrateCatalogSchema } from './persistence/sqlite/catalog.schema';
 import { SqliteProductRepository } from './persistence/sqlite/sqlite-product.repository';
 
 export function buildCatalogModule(
@@ -13,6 +14,8 @@ export function buildCatalogModule(
     db: Database.Database,
     eventBus: IEventBus,
 ): void {
+    migrateCatalogSchema(db);
+
     const productRepository = new SqliteProductRepository(db);
 
     const createProductUseCase = new CreateProduct(productRepository, eventBus);
