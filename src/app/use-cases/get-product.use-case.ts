@@ -3,9 +3,7 @@ import { IGetProductUseCase } from '../ports/input/get-product.port';
 import { IProductRepository } from '../ports/output/product.repository';
 
 export class GetProduct implements IGetProductUseCase {
-    private constructor(
-        private readonly productRepository: IProductRepository,
-    ) {}
+    constructor(private readonly productRepository: IProductRepository) {}
 
     public async execute(id: string): Promise<GetProductReponse | null> {
         const product = await this.productRepository.findById(id);

@@ -8,7 +8,7 @@ import { IEventBus } from '../ports/output/event-bus.port';
 import { IProductRepository } from '../ports/output/product.repository';
 
 export class CreateProduct implements ICreateProductUseCase {
-    private constructor(
+    constructor(
         private readonly productRepository: IProductRepository,
         private readonly eventBus: IEventBus,
     ) {}
