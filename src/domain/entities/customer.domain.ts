@@ -42,7 +42,7 @@ export class Customer {
     public get name(): string {
         return this.props.name;
     }
-    public get status(): string {
+    public get status(): CustomerStatus {
         return this.props.status;
     }
     public get createdAt(): Date {

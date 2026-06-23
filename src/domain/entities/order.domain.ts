@@ -1,12 +1,15 @@
-import type { Product } from './product.domain.js';
-import type { Money } from './value-objects/money.js';
+import { Money } from './value-objects/money.js';
 
-export type OrderStatus = 'closed' | 'open' | 'canceled' | 'deleted';
-
+export type OrderStatus = 'pending' | 'confirmed' | 'cancelled';
+export type OrderItem = {
+    productId: string;
+    quantity: number;
+    unitPrice: Money;
+};
 export type OrderProps = {
     id: string;
     customerId: string;
-    items: Product[];
+    items: OrderItem[];
     status: OrderStatus;
     total: Money;
     createdAt: Date;
@@ -16,17 +19,16 @@ export type OrderProps = {
 export class Order {
     private constructor(private readonly props: OrderProps) {}
 
-    public static build(
-        customerId: string,
-        items: Product[],
-        status: OrderStatus,
-        total: Money,
-    ): Order {
+    public static create(customerId: string, items: OrderItem[]): Order {
+        const total = Money.sum(
+            items.map((item) => item.unitPrice.multiply(item.quantity)),
+        );
+
         return new Order({
             id: crypto.randomUUID().toString(),
             customerId,
             items,
-            status,
+            status: 'pending',
             total,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -36,9 +38,11 @@ export class Order {
     public static with(
         id: string,
         customerId: string,
-        items: Product[],
+        items: OrderItem[],
         status: OrderStatus,
         total: Money,
+        createdAt: Date,
+        updatedAt: Date,
     ): Order {
         return new Order({
             id,
@@ -46,8 +50,8 @@ export class Order {
             items,
             status,
             total,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt,
+            updatedAt,
         });
     }
 
@@ -59,7 +63,7 @@ export class Order {
         return this.props.customerId;
     }
 
-    public get items(): Product[] {
+    public get items(): OrderItem[] {
         return this.props.items;
     }
 
@@ -74,6 +78,7 @@ export class Order {
     public get createdAt(): Date {
         return this.props.createdAt;
     }
+
     public get updatedAt(): Date {
         return this.props.updatedAt;
     }

@@ -1,25 +1,33 @@
-import { Money, type MoneyProps } from './value-objects/money.js';
+import { Money } from './value-objects/money.js';
 
-export type ProductPorps = {
+export type ProductProps = {
     id: string;
+    name: string;
     stock: number;
     price: Money;
 };
 
 export class Product {
-    private constructor(private readonly props: ProductPorps) {}
+    private constructor(private readonly props: ProductProps) {}
 
-    public static build(stock: number, price: number): Product {
+    public static build(stock: number, name: string, price: number): Product {
         return new Product({
             id: crypto.randomUUID().toString(),
+            name,
             stock,
             price: Money.create(price),
         });
     }
 
-    public with(id: string, price: Money, stock: number) {
+    public static with(
+        id: string,
+        name: string,
+        price: Money,
+        stock: number,
+    ): Product {
         return new Product({
             id,
+            name,
             stock,
             price,
         });
@@ -29,8 +37,16 @@ export class Product {
         return this.props.id;
     }
 
+    public get name(): string {
+        return this.props.name;
+    }
+
     public get stock(): number {
         return this.props.stock;
+    }
+
+    public updateStock(stock: number): Product {
+        return Product.with(this.id, this.name, this.price, stock);
     }
 
     public get price(): Money {

@@ -20,6 +20,18 @@ export class Money {
         return this.props.amount * 100;
     }
 
+    public add(other: Money): Money {
+        return Money.create(this.toCents() + other.toCents());
+    }
+
+    public multiply(factor: number): Money {
+        return Money.create(Math.round(this.toCents() * factor));
+    }
+
+    public static sum(values: Money[]): Money {
+        return values.reduce((total, value) => total.add(value), Money.create(0));
+    }
+
     public toCurrency(): string {
         const formatter = new Intl.NumberFormat('en-US', {
             style: 'currency',
