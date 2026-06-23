@@ -23,32 +23,45 @@ export class CreateOrder implements ICreateOrderUseCase {
         if (customer.status !== 'active')
             throw new Error('Customer is not active');
 
-        const items: OrderItem[] = [];
+        const reservation = await this.productCatalogClient.reserveStock(
+            dto.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+            })),
+        );
 
-        for (const requestedItem of dto.items) {
-            const product = await this.productCatalogClient.findById(
-                requestedItem.productId,
-            );
-
-            if (!product)
-                throw new Error(
-                    `Product ${requestedItem.productId} not found`,
-                );
-            if (product.stock < requestedItem.quantity)
-                throw new Error(
-                    `Insufficient stock for product ${requestedItem.productId}`,
-                );
-
-            items.push({
-                productId: product.id,
-                quantity: requestedItem.quantity,
-                unitPrice: Money.create(product.price),
-            });
+        if (!reservation.success) {
+            const reasons = reservation.failures
+                .map((failure) => `${failure.productId} (${failure.reason})`)
+                .join(', ');
+            throw new Error(`Could not reserve stock for: ${reasons}`);
         }
+
+        const priceByProductId = new Map(
+            reservation.products.map((product) => [product.id, product.price]),
+        );
+
+        const items: OrderItem[] = dto.items.map((requestedItem) => ({
+            productId: requestedItem.productId,
+            quantity: requestedItem.quantity,
+            unitPrice: Money.create(
+                priceByProductId.get(requestedItem.productId)!,
+            ),
+        }));
 
         const order = Order.create(dto.customerId, items);
 
-        await this.orderRepository.save(order);
+        try {
+            await this.orderRepository.save(order);
+        } catch (error) {
+            await this.productCatalogClient.releaseStock(
+                dto.items.map((item) => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                })),
+            );
+            throw error;
+        }
 
         await this.eventBus.publish('orders.order.created', {
             id: order.id,
