@@ -1,5 +1,9 @@
 import Database from 'better-sqlite3';
-import { IProductRepository } from '../../../app/ports/output/product.repository';
+import {
+    IProductRepository,
+    StockReservationFailure,
+    StockReservationItem,
+} from '../../../app/ports/output/product.repository';
 import { Product } from '../../../domain/entities/product.domain';
 import { Money } from '../../../domain/entities/value-objects/money';
 
@@ -9,6 +13,12 @@ type ProductRow = {
     stock: number;
     price: number;
 };
+
+class StockReservationRollback extends Error {
+    constructor(public readonly failures: StockReservationFailure[]) {
+        super('stock reservation rolled back');
+    }
+}
 
 export class SqliteProductRepository implements IProductRepository {
     constructor(readonly db: Database.Database) {}
@@ -63,5 +73,63 @@ export class SqliteProductRepository implements IProductRepository {
                 product.price.toCents(),
                 product.id,
             );
+    }
+
+    public async reserveStock(
+        items: StockReservationItem[],
+    ): Promise<StockReservationFailure[]> {
+        const decrement = this.db.prepare(
+            'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
+        );
+        const exists = this.db.prepare('SELECT 1 FROM products WHERE id = ?');
+
+        const reserveAll = this.db.transaction(
+            (items: StockReservationItem[]) => {
+                const failures: StockReservationFailure[] = [];
+
+                for (const item of items) {
+                    const result = decrement.run(
+                        item.quantity,
+                        item.productId,
+                        item.quantity,
+                    );
+
+                    if (result.changes === 0) {
+                        failures.push({
+                            productId: item.productId,
+                            reason: exists.get(item.productId)
+                                ? 'insufficient_stock'
+                                : 'not_found',
+                        });
+                    }
+                }
+
+                if (failures.length > 0) throw new StockReservationRollback(failures);
+            },
+        );
+
+        try {
+            reserveAll(items);
+            return [];
+        } catch (error) {
+            if (error instanceof StockReservationRollback) return error.failures;
+            throw error;
+        }
+    }
+
+    public async releaseStock(items: StockReservationItem[]): Promise<void> {
+        const increment = this.db.prepare(
+            'UPDATE products SET stock = stock + ? WHERE id = ?',
+        );
+
+        const releaseAll = this.db.transaction(
+            (items: StockReservationItem[]) => {
+                for (const item of items) {
+                    increment.run(item.quantity, item.productId);
+                }
+            },
+        );
+
+        releaseAll(items);
     }
 }
