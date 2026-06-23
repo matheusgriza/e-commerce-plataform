@@ -5,7 +5,9 @@
     "main": "./app/index.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "npx tsx --watch index.ts"
+        "dev": "npx tsx --watch index.ts",
+        "dev:catalog": "npx tsx --watch index.ts",
+        "dev:orders": "npx tsx --watch index-orders.ts"
     },
     "repository": {
         "type": "git",
