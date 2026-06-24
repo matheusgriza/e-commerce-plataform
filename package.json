@@ -7,7 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "npx tsx --watch index.ts",
         "dev:catalog": "npx tsx --watch index.ts",
-        "dev:orders": "npx tsx --watch index-orders.ts"
+        "dev:orders": "npx tsx --watch index-orders.ts",
+        "dev:notifications": "npx tsx --watch index-notifications.ts"
     },
     "repository": {
         "type": "git",

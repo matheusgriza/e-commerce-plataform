@@ -1,23 +1,26 @@
 export type MoneyProps = {
-    amount: number;
+    cents: number;
 };
 
 export class Money {
+    // Cents are the canonical representation, stored and passed around as an
+    // integer everywhere. Dollars only exist transiently for display, so float
+    // drift from repeated add/multiply never has a chance to creep in.
     private constructor(readonly props: MoneyProps) {}
 
-    public static create(amount: number): Money {
-        if (!Number.isInteger(amount))
+    public static create(cents: number): Money {
+        if (!Number.isInteger(cents))
             throw new Error('amount must be an integer');
 
-        return new Money({ amount: amount / 100 });
+        return new Money({ cents });
     }
 
     public get amount(): number {
-        return this.props.amount;
+        return this.props.cents / 100;
     }
 
     public toCents(): number {
-        return this.props.amount * 100;
+        return this.props.cents;
     }
 
     public add(other: Money): Money {
@@ -38,6 +41,6 @@ export class Money {
             currency: 'USD',
         });
 
-        return formatter.format(this.props.amount);
+        return formatter.format(this.amount);
     }
 }
