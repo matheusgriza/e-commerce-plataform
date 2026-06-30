@@ -1,0 +1,23 @@
+# ─────────────────────────────────────────────────────────────
+#  Notificações  •  http://localhost:3003
+#  Execute seed.sh primeiro, depois selecione o env "demo"
+#  no VS Code REST Client (Ctrl+Alt+E)
+#
+#  Este serviço não recebe chamadas REST para criar notificações.
+#  Elas são criadas automaticamente ao consumir eventos do RabbitMQ.
+#  Aqui só consultamos as notificações já geradas.
+# ─────────────────────────────────────────────────────────────
+
+### Notificações de João Silva
+# Deve conter "orders.order.created" após o pedido ser criado
+GET {{NOTIF_URL}}/customers/{{CUSTOMER_1_ID}}/notifications
+
+### ─────────────────────────────────────────────────────────────
+
+### Notificações de Maria Santos
+GET {{NOTIF_URL}}/customers/{{CUSTOMER_2_ID}}/notifications
+
+### ─────────────────────────────────────────────────────────────
+
+### Cliente sem notificações (deve retornar lista vazia)
+GET {{NOTIF_URL}}/customers/00000000-0000-0000-0000-000000000000/notifications

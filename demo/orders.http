@@ -1,0 +1,77 @@
+# ─────────────────────────────────────────────────────────────
+#  Pedidos  •  http://localhost:3002
+#  Execute seed.sh primeiro, depois selecione o env "demo"
+#  no VS Code REST Client (Ctrl+Alt+E)
+# ─────────────────────────────────────────────────────────────
+
+### Criar cliente — João Silva
+POST {{ORDERS_URL}}/customers
+Content-Type: application/json
+
+{
+  "name": "Joao Silva"
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Criar cliente — Maria Santos
+POST {{ORDERS_URL}}/customers
+Content-Type: application/json
+
+{
+  "name": "Maria Santos"
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Criar pedido — João compra MacBook + 2x AirPods
+# Orders chama Catalog via REST para reservar estoque antes de salvar
+POST {{ORDERS_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerId": "{{CUSTOMER_1_ID}}",
+  "items": [
+    { "productId": "{{PRODUCT_1_ID}}", "quantity": 1 },
+    { "productId": "{{PRODUCT_3_ID}}", "quantity": 2 }
+  ]
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Criar pedido — Maria compra iPhone
+POST {{ORDERS_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerId": "{{CUSTOMER_2_ID}}",
+  "items": [
+    { "productId": "{{PRODUCT_2_ID}}", "quantity": 1 }
+  ]
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Demo de rejeição — estoque insuficiente (409)
+POST {{ORDERS_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerId": "{{CUSTOMER_1_ID}}",
+  "items": [
+    { "productId": "{{PRODUCT_1_ID}}", "quantity": 9999 }
+  ]
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Demo de rejeição — cliente inexistente (422)
+POST {{ORDERS_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerId": "00000000-0000-0000-0000-000000000000",
+  "items": [
+    { "productId": "{{PRODUCT_1_ID}}", "quantity": 1 }
+  ]
+}

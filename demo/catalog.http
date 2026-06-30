@@ -1,0 +1,91 @@
+# ─────────────────────────────────────────────────────────────
+#  Catálogo  •  http://localhost:3001
+#  Execute seed.sh primeiro, depois selecione o env "demo"
+#  no VS Code REST Client (Ctrl+Alt+E)
+# ─────────────────────────────────────────────────────────────
+
+### Criar produto
+POST {{CATALOG_URL}}/products
+Content-Type: application/json
+
+{
+  "name": "MacBook Pro 14\"",
+  "stock": 5,
+  "price": 849900
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Criar produto — iPhone
+POST {{CATALOG_URL}}/products
+Content-Type: application/json
+
+{
+  "name": "iPhone 15",
+  "stock": 10,
+  "price": 499900
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Criar produto — AirPods
+POST {{CATALOG_URL}}/products
+Content-Type: application/json
+
+{
+  "name": "AirPods Pro",
+  "stock": 20,
+  "price": 179900
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Buscar produto por ID
+GET {{CATALOG_URL}}/products/{{PRODUCT_1_ID}}
+
+### ─────────────────────────────────────────────────────────────
+
+### Atualizar estoque manualmente
+PUT {{CATALOG_URL}}/products/{{PRODUCT_1_ID}}/stock
+Content-Type: application/json
+
+{
+  "quantity": 99
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Reservar estoque (chamada interna — usada pelo Orders)
+POST {{CATALOG_URL}}/products/reserve
+Content-Type: application/json
+
+{
+  "items": [
+    { "productId": "{{PRODUCT_1_ID}}", "quantity": 1 },
+    { "productId": "{{PRODUCT_3_ID}}", "quantity": 2 }
+  ]
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Tentar reservar mais do que o estoque (demo de rejeição)
+POST {{CATALOG_URL}}/products/reserve
+Content-Type: application/json
+
+{
+  "items": [
+    { "productId": "{{PRODUCT_1_ID}}", "quantity": 9999 }
+  ]
+}
+
+### ─────────────────────────────────────────────────────────────
+
+### Liberar estoque (compensação / rollback)
+POST {{CATALOG_URL}}/products/release
+Content-Type: application/json
+
+{
+  "items": [
+    { "productId": "{{PRODUCT_1_ID}}", "quantity": 1 }
+  ]
+}
