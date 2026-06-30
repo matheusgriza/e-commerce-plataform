@@ -5,10 +5,11 @@
     "main": "./app/index.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "npx tsx --watch index.ts",
-        "dev:catalog": "npx tsx --watch index.ts",
-        "dev:orders": "npx tsx --watch index-orders.ts",
-        "dev:notifications": "npx tsx --watch index-notifications.ts"
+        "dev": "concurrently --names \"catalog,orders,notifications\" --prefix-colors \"cyan,yellow,magenta\" \"tsx --watch index.ts\" \"tsx --watch index-orders.ts\" \"tsx --watch index-notifications.ts\"",
+        "dev:catalog": "tsx --watch index.ts",
+        "dev:orders": "tsx --watch index-orders.ts",
+        "dev:notifications": "tsx --watch index-notifications.ts",
+        "demo": "bash demo/seed.sh"
     },
     "repository": {
         "type": "git",
@@ -27,6 +28,7 @@
         "@types/better-sqlite3": "^7.6.13",
         "@types/express": "^5.0.6",
         "@types/node": "^25.9.3",
+        "concurrently": "^10.0.3",
         "tsx": "^4.22.4",
         "typescript": "^6.0.3"
     },
