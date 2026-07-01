@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Popula todos os serviços com dados de demo e gera http-client.env.json
+# Popula todos os serviços com dados de demo e grava as variáveis em .vscode/settings.json
 # Uso: bash demo/seed.sh
 set -e
 
 CATALOG="http://localhost:3001"
 ORDERS="http://localhost:3002"
 NOTIF="http://localhost:3003"
-ENV_FILE="$(dirname "$0")/../http-client.env.json"
+SETTINGS_FILE="$(dirname "$0")/../.vscode/settings.json"
 
 # ── dependências ────────────────────────────────────────────────────────────
 if ! command -v jq &>/dev/null; then
@@ -110,26 +110,29 @@ echo ""
 echo "🔔  Notificações — Maria Santos:"
 curl -s "$NOTIF/customers/$C2_ID/notifications" | jq '.[] | {message, type}'
 
-# ── escreve http-client.env.json ──────────────────────────────────────────────
-cat > "$ENV_FILE" <<EOF
-{
-  "demo": {
-    "CATALOG_URL": "$CATALOG",
-    "ORDERS_URL": "$ORDERS",
-    "NOTIF_URL": "$NOTIF",
-    "PRODUCT_1_ID": "$P1_ID",
-    "PRODUCT_2_ID": "$P2_ID",
-    "PRODUCT_3_ID": "$P3_ID",
-    "CUSTOMER_1_ID": "$C1_ID",
-    "CUSTOMER_2_ID": "$C2_ID",
-    "ORDER_1_ID": "$O1_ID",
-    "ORDER_2_ID": "$O2_ID"
-  }
-}
-EOF
+# ── grava rest-client.environmentVariables em .vscode/settings.json ──────────
+TMP_FILE="$(mktemp)"
+jq --arg catalog "$CATALOG" \
+   --arg orders "$ORDERS" \
+   --arg notif "$NOTIF" \
+   --arg p1 "$P1_ID" --arg p2 "$P2_ID" --arg p3 "$P3_ID" \
+   --arg c1 "$C1_ID" --arg c2 "$C2_ID" \
+   --arg o1 "$O1_ID" --arg o2 "$O2_ID" \
+   '.["rest-client.environmentVariables"].demo = {
+      "CATALOG_URL": $catalog,
+      "ORDERS_URL": $orders,
+      "NOTIF_URL": $notif,
+      "PRODUCT_1_ID": $p1,
+      "PRODUCT_2_ID": $p2,
+      "PRODUCT_3_ID": $p3,
+      "CUSTOMER_1_ID": $c1,
+      "CUSTOMER_2_ID": $c2,
+      "ORDER_1_ID": $o1,
+      "ORDER_2_ID": $o2
+    }' "$SETTINGS_FILE" > "$TMP_FILE" && mv "$TMP_FILE" "$SETTINGS_FILE"
 
 echo ""
-echo "💾  IDs salvos em demo/http-client.env.json"
+echo "💾  IDs salvos em .vscode/settings.json (rest-client.environmentVariables.demo)"
 echo "    No VS Code REST Client: selecione o environment 'demo' e use os arquivos .http"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
